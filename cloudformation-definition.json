@@ -1,22 +1,10 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "The template used to create an ECS Service with an ALB.",
+  "Description": "Template to create an ECS Service with an ALB, including VPC and Security Group",
   "Parameters": {
     "ECSClusterName": {
       "Type": "String",
       "Default": "btg-pactual-cluster"
-    },
-    "SecurityGroupIDs": {
-      "Type": "CommaDelimitedList",
-      "Default": "sg-0cd652cf91cb0a13e,sg-0d8c04960e5943f64,sg-0a937e18658eb55c9"
-    },
-    "SubnetIDs": {
-      "Type": "CommaDelimitedList",
-      "Default": "subnet-0add8a303e4598bc9,subnet-0643aff94194c8383,subnet-0bc3a5a1bf563ab50"
-    },
-    "VpcID": {
-      "Type": "String",
-      "Default": "vpc-0da3cc621412dd80c"
     },
     "LoadBalancerName": {
       "Type": "String",
@@ -24,12 +12,128 @@
     }
   },
   "Resources": {
+    "VPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16",
+        "EnableDnsHostnames": true,
+        "EnableDnsSupport": true,
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "BTG-Pactual-VPC"
+          }
+        ]
+      }
+    },
+    "InternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "BTG-Pactual-IGW"
+          }
+        ]
+      }
+    },
+    "InternetGatewayAttachment": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "InternetGatewayId": { "Ref": "InternetGateway" },
+        "VpcId": { "Ref": "VPC" }
+      }
+    },
+    "PublicSubnet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" },
+        "AvailabilityZone": { "Fn::Select": [0, { "Fn::GetAZs": "" }] },
+        "CidrBlock": "10.0.1.0/24",
+        "MapPublicIpOnLaunch": true,
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "BTG-Pactual-Public-Subnet-1"
+          }
+        ]
+      }
+    },
+    "PublicSubnet2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" },
+        "AvailabilityZone": { "Fn::Select": [1, { "Fn::GetAZs": "" }] },
+        "CidrBlock": "10.0.2.0/24",
+        "MapPublicIpOnLaunch": true,
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "BTG-Pactual-Public-Subnet-2"
+          }
+        ]
+      }
+    },
+    "PublicRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "BTG-Pactual-Public-Routes"
+          }
+        ]
+      }
+    },
+    "DefaultPublicRoute": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": "InternetGatewayAttachment",
+      "Properties": {
+        "RouteTableId": { "Ref": "PublicRouteTable" },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": { "Ref": "InternetGateway" }
+      }
+    },
+    "PublicSubnet1RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": { "Ref": "PublicRouteTable" },
+        "SubnetId": { "Ref": "PublicSubnet1" }
+      }
+    },
+    "PublicSubnet2RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": { "Ref": "PublicRouteTable" },
+        "SubnetId": { "Ref": "PublicSubnet2" }
+      }
+    },
+    "ECSSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security group for ECS tasks",
+        "VpcId": { "Ref": "VPC" },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 3333,
+            "ToPort": 3333,
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "BTG-Pactual-ECS-SG"
+          }
+        ]
+      }
+    },
     "ECSCluster": {
       "Type": "AWS::ECS::Cluster",
       "Properties": {
-        "ClusterName": {
-          "Ref": "ECSClusterName"
-        }
+        "ClusterName": { "Ref": "ECSClusterName" }
       }
     },
     "ECSTaskDefinition": {
@@ -40,11 +144,15 @@
         "RequiresCompatibilities": ["FARGATE"],
         "Cpu": "256",
         "Memory": "512",
-        "ExecutionRoleArn": "arn:aws:iam::070645455129:role/ecsTaskExecutionRole",
+        "ExecutionRoleArn": {
+          "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/ecsTaskExecutionRole"
+        },
         "ContainerDefinitions": [
           {
             "Name": "btg-pactual-container",
-            "Image": "070645455129.dkr.ecr.us-east-2.amazonaws.com/btg/btg-funds:latest",
+            "Image": {
+              "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/btg/btg-funds:latest"
+            },
             "PortMappings": [
               {
                 "ContainerPort": 3333
@@ -57,9 +165,7 @@
     "ECSService": {
       "Type": "AWS::ECS::Service",
       "Properties": {
-        "Cluster": {
-          "Ref": "ECSCluster"
-        },
+        "Cluster": { "Ref": "ECSCluster" },
         "CapacityProviderStrategy": [
           {
             "CapacityProvider": "FARGATE",
@@ -70,33 +176,19 @@
         "ServiceName": "btg-pactual-service",
         "SchedulingStrategy": "REPLICA",
         "DesiredCount": 1,
-        "TaskDefinition": {
-          "Ref": "ECSTaskDefinition"
-        },
+        "TaskDefinition": { "Ref": "ECSTaskDefinition" },
         "LoadBalancers": [
           {
             "ContainerName": "btg-pactual-container",
             "ContainerPort": 3333,
-            "TargetGroupArn": {
-              "Ref": "TargetGroup"
-            }
+            "TargetGroupArn": { "Ref": "TargetGroup" }
           }
         ],
         "NetworkConfiguration": {
           "AwsvpcConfiguration": {
             "AssignPublicIp": "ENABLED",
-            "SecurityGroups": {
-              "Fn::Split": [
-                ",",
-                "sg-0cd652cf91cb0a13e,sg-0d8c04960e5943f64,sg-0a937e18658eb55c9"
-              ]
-            },
-            "Subnets": {
-              "Fn::Split": [
-                ",",
-                "subnet-0add8a303e4598bc9,subnet-0643aff94194c8383,subnet-0bc3a5a1bf563ab50"
-              ]
-            }
+            "SecurityGroups": [{ "Ref": "ECSSecurityGroup" }],
+            "Subnets": [{ "Ref": "PublicSubnet1" }, { "Ref": "PublicSubnet2" }]
           }
         },
         "PlatformVersion": "LATEST",
@@ -123,21 +215,9 @@
       "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
       "Properties": {
         "Type": "application",
-        "Name": {
-          "Ref": "LoadBalancerName"
-        },
-        "SecurityGroups": {
-          "Fn::Split": [
-            ",",
-            "sg-0cd652cf91cb0a13e,sg-0d8c04960e5943f64,sg-0a937e18658eb55c9"
-          ]
-        },
-        "Subnets": {
-          "Fn::Split": [
-            ",",
-            "subnet-0add8a303e4598bc9,subnet-0643aff94194c8383,subnet-0bc3a5a1bf563ab50"
-          ]
-        }
+        "Name": { "Ref": "LoadBalancerName" },
+        "SecurityGroups": [{ "Ref": "ECSSecurityGroup" }],
+        "Subnets": [{ "Ref": "PublicSubnet1" }, { "Ref": "PublicSubnet2" }]
       }
     },
     "TargetGroup": {
@@ -149,9 +229,7 @@
         "Protocol": "HTTP",
         "TargetType": "ip",
         "HealthCheckProtocol": "HTTP",
-        "VpcId": {
-          "Ref": "VpcID"
-        }
+        "VpcId": { "Ref": "VPC" }
       }
     },
     "Listener": {
@@ -160,14 +238,10 @@
         "DefaultActions": [
           {
             "Type": "forward",
-            "TargetGroupArn": {
-              "Ref": "TargetGroup"
-            }
+            "TargetGroupArn": { "Ref": "TargetGroup" }
           }
         ],
-        "LoadBalancerArn": {
-          "Ref": "LoadBalancer"
-        },
+        "LoadBalancerArn": { "Ref": "LoadBalancer" },
         "Port": 80,
         "Protocol": "HTTP"
       }
@@ -176,33 +250,40 @@
   "Outputs": {
     "ClusterName": {
       "Description": "The cluster used to create the service.",
-      "Value": {
-        "Ref": "ECSClusterName"
-      }
+      "Value": { "Ref": "ECSClusterName" }
     },
     "ECSService": {
       "Description": "The created service.",
-      "Value": {
-        "Ref": "ECSService"
-      }
+      "Value": { "Ref": "ECSService" }
     },
     "LoadBalancer": {
       "Description": "The created load balancer.",
-      "Value": {
-        "Ref": "LoadBalancer"
-      }
+      "Value": { "Ref": "LoadBalancer" }
     },
     "Listener": {
       "Description": "The created listener.",
-      "Value": {
-        "Ref": "Listener"
-      }
+      "Value": { "Ref": "Listener" }
     },
     "TargetGroup": {
       "Description": "The created target group.",
+      "Value": { "Ref": "TargetGroup" }
+    },
+    "VPC": {
+      "Description": "The created VPC.",
+      "Value": { "Ref": "VPC" }
+    },
+    "PublicSubnets": {
+      "Description": "The public subnets in the VPC.",
       "Value": {
-        "Ref": "TargetGroup"
+        "Fn::Join": [
+          ", ",
+          [{ "Ref": "PublicSubnet1" }, { "Ref": "PublicSubnet2" }]
+        ]
       }
+    },
+    "ECSSecurityGroup": {
+      "Description": "The security group for ECS tasks.",
+      "Value": { "Ref": "ECSSecurityGroup" }
     }
   }
 }
