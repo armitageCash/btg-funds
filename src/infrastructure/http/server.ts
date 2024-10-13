@@ -24,8 +24,9 @@ server.get("/health-ckeck", (req, res, next) => {
 });
 
 server.listen(process.env.PORT || 3000, async () => {
-  new Database(
+  const connection = new Database(
     process.env.MONGO_URI?.toString() || "mongodb://testdb:27017/testdb"
   );
+  await connection.connect();
   console.log("%s escuchando en %s", server.name, server.url);
 });

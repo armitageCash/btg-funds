@@ -33,7 +33,7 @@ const transactionSchema = new Schema<Transaction>({
   },
   status: {
     type: String,
-    enum: ["Completed", "Pending"], // Estados permitidos
+    enum: ["Opened", "Closed"], // Estados permitidos
     required: true, // El estado es obligatorio
   },
   type: {

@@ -12,10 +12,11 @@ export class SubscriptionRepository extends Repository<Subscription> {
   createOne(data: Partial<Subscription>): Promise<Subscription> {
     return this.model.create(data);
   }
+
   updateOne(
     id: string,
     data: Partial<Subscription>
   ): Promise<Subscription | null> {
-    return this.updateOne(id, data);
+    return this.model.findByIdAndUpdate(id, data, { new: true }).exec();
   }
 }

@@ -41,16 +41,16 @@ export default class SubscriptionController {
       const msg = await this.mailService.renderTemplate("createSubscription", {
         amount: subscription.amount,
         createdAt: subscription.createdAt,
-        fund: subscription.fund,
+        fund: populatedSubscription.fund.name,
         status: subscription.status,
-        user: subscription.user,
+        user: `${populatedSubscription.user.firstName} ${populatedSubscription.user.lastName}`,
         updatedAt: new Date(),
       });
 
       await this.mailService.sendEmail(
-        "",
+        populatedSubscription.user.email,
         "Información de actualización de suscripción",
-        "",
+        populatedSubscription.user.email,
         msg
       );
 
@@ -73,6 +73,12 @@ export default class SubscriptionController {
       );
 
       if (subscription) {
+        const subscriptiondetailed: SubscriptionDetailed =
+          await subscription.populate([
+            { path: "user", model: userModel },
+            { path: "fund", model: fundModel },
+          ]);
+
         const tx = await this.transactionRepository.createOne({
           subscription: subscription._id,
           performance: 150000,
@@ -86,15 +92,15 @@ export default class SubscriptionController {
           {
             amount: subscription.amount,
             createdAt: subscription.createdAt,
-            fund: "",
+            fund: subscriptiondetailed.fund.name,
             status: subscription.status,
-            user: "",
+            user: `${subscriptiondetailed.user.firstName} ${subscriptiondetailed.user.lastName}`,
             updatedAt: new Date(),
           }
         );
 
         await this.mailService.sendEmail(
-          "",
+          subscriptiondetailed.user.email,
           "Información de actualización de suscripción",
           "",
           msg

@@ -10,6 +10,6 @@ export class TransactionRepository extends Repository<Transaction> {
   }
 
   createOne(data: Partial<Transaction>): Promise<Transaction> {
-    return this.createOne(data);
+    return this.model.create(data);
   }
 }

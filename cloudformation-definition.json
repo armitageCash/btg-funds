@@ -40,11 +40,11 @@
         "RequiresCompatibilities": ["FARGATE"],
         "Cpu": "256",
         "Memory": "512",
-        "ExecutionRoleArn": "arn:aws:iam::459930247502:role/ecsTaskExecutionRole",
+        "ExecutionRoleArn": "arn:aws:iam::070645455129:role/ecsTaskExecutionRole",
         "ContainerDefinitions": [
           {
             "Name": "btg-pactual-container",
-            "Image": "459930247502.dkr.ecr.us-east-2.amazonaws.com/btg-pactual-ecr-repository:latest",
+            "Image": "070645455129.dkr.ecr.us-east-2.amazonaws.com/btg-pactual-ecr-repository:latest",
             "PortMappings": [
               {
                 "ContainerPort": 3333

@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  d3una-app:
+  btg-app:
     container_name: btg-pactual-app
     restart: always
     build:
@@ -25,6 +25,6 @@ services:
     ports:
       - 27017:27017
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=d3una
-      - MONGO_INITDB_ROOT_PASSWORD=d3una-core
+      - MONGO_INITDB_ROOT_USERNAME=btg
+      - MONGO_INITDB_ROOT_PASSWORD=btg-pwd
     command: mongod --auth
