@@ -295,7 +295,7 @@
       "Properties": {
         "HealthCheckPath": "/status-check",
         "Name": "btg-pactual-group",
-        "Port": 80,
+        "Port": 3000,
         "Protocol": "HTTP",
         "TargetType": "ip",
         "HealthCheckProtocol": "HTTP",
