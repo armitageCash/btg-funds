@@ -1,0 +1,33 @@
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notificación de Suscripción</title>
+    <style>
+      body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin:
+      0; padding: 20px; } .container { background-color: #fff; border-radius:
+      5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; max-width:
+      600px; margin: auto; } h1 { color: #333; } p { line-height: 1.5; color:
+      #555; } .footer { margin-top: 20px; font-size: 12px; color: #888; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Notificación de cancelacion</h1>
+      <p>Hola <strong>{{user}}</strong>,</p>
+      <p>¡Gracias por suscribirte al fondo <strong>{{fund}}</strong>!</p>
+      <p>Detalles de tu suscripción:</p>
+      <ul>
+        <li><strong>Monto de la Suscripción:</strong> {{amount}} USD</li>
+        <li><strong>Fecha de Creación:</strong> {{createdAt}}</li>
+        <li><strong>Fecha de Actualización:</strong> {{updatedAt}}</li>
+        <li><strong>Estado:</strong> {{status}}</li>
+      </ul>
+      <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
+      <p>Saludos,<br />El equipo de Suscripciones</p>
+      <div class="footer">
+        <p>&copy; {{year}} Tu Empresa. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </body>
+</html>

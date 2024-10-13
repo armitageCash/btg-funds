@@ -1,0 +1,208 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "The template used to create an ECS Service with an ALB.",
+  "Parameters": {
+    "ECSClusterName": {
+      "Type": "String",
+      "Default": "btg-pactual-cluster"
+    },
+    "SecurityGroupIDs": {
+      "Type": "CommaDelimitedList",
+      "Default": "sg-0cd652cf91cb0a13e,sg-0d8c04960e5943f64,sg-0a937e18658eb55c9"
+    },
+    "SubnetIDs": {
+      "Type": "CommaDelimitedList",
+      "Default": "subnet-0add8a303e4598bc9,subnet-0643aff94194c8383,subnet-0bc3a5a1bf563ab50"
+    },
+    "VpcID": {
+      "Type": "String",
+      "Default": "vpc-0da3cc621412dd80c"
+    },
+    "LoadBalancerName": {
+      "Type": "String",
+      "Default": "btg-pactual-elb"
+    }
+  },
+  "Resources": {
+    "ECSCluster": {
+      "Type": "AWS::ECS::Cluster",
+      "Properties": {
+        "ClusterName": {
+          "Ref": "ECSClusterName"
+        }
+      }
+    },
+    "ECSTaskDefinition": {
+      "Type": "AWS::ECS::TaskDefinition",
+      "Properties": {
+        "Family": "btg-pactual-definition",
+        "NetworkMode": "awsvpc",
+        "RequiresCompatibilities": ["FARGATE"],
+        "Cpu": "256",
+        "Memory": "512",
+        "ExecutionRoleArn": "arn:aws:iam::459930247502:role/ecsTaskExecutionRole",
+        "ContainerDefinitions": [
+          {
+            "Name": "btg-pactual-container",
+            "Image": "459930247502.dkr.ecr.us-east-2.amazonaws.com/btg-pactual-ecr-repository:latest",
+            "PortMappings": [
+              {
+                "ContainerPort": 3333
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "ECSService": {
+      "Type": "AWS::ECS::Service",
+      "Properties": {
+        "Cluster": {
+          "Ref": "ECSCluster"
+        },
+        "CapacityProviderStrategy": [
+          {
+            "CapacityProvider": "FARGATE",
+            "Base": 0,
+            "Weight": 1
+          }
+        ],
+        "ServiceName": "btg-pactual-service",
+        "SchedulingStrategy": "REPLICA",
+        "DesiredCount": 1,
+        "TaskDefinition": {
+          "Ref": "ECSTaskDefinition"
+        },
+        "LoadBalancers": [
+          {
+            "ContainerName": "btg-pactual-container",
+            "ContainerPort": 3333,
+            "TargetGroupArn": {
+              "Ref": "TargetGroup"
+            }
+          }
+        ],
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "AssignPublicIp": "ENABLED",
+            "SecurityGroups": {
+              "Fn::Split": [
+                ",",
+                "sg-0cd652cf91cb0a13e,sg-0d8c04960e5943f64,sg-0a937e18658eb55c9"
+              ]
+            },
+            "Subnets": {
+              "Fn::Split": [
+                ",",
+                "subnet-0add8a303e4598bc9,subnet-0643aff94194c8383,subnet-0bc3a5a1bf563ab50"
+              ]
+            }
+          }
+        },
+        "PlatformVersion": "LATEST",
+        "DeploymentConfiguration": {
+          "MaximumPercent": 200,
+          "MinimumHealthyPercent": 100,
+          "DeploymentCircuitBreaker": {
+            "Enable": true,
+            "Rollback": true
+          }
+        },
+        "DeploymentController": {
+          "Type": "ECS"
+        },
+        "ServiceConnectConfiguration": {
+          "Enabled": false
+        },
+        "Tags": [],
+        "EnableECSManagedTags": true
+      },
+      "DependsOn": ["Listener"]
+    },
+    "LoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties": {
+        "Type": "application",
+        "Name": {
+          "Ref": "LoadBalancerName"
+        },
+        "SecurityGroups": {
+          "Fn::Split": [
+            ",",
+            "sg-0cd652cf91cb0a13e,sg-0d8c04960e5943f64,sg-0a937e18658eb55c9"
+          ]
+        },
+        "Subnets": {
+          "Fn::Split": [
+            ",",
+            "subnet-0add8a303e4598bc9,subnet-0643aff94194c8383,subnet-0bc3a5a1bf563ab50"
+          ]
+        }
+      }
+    },
+    "TargetGroup": {
+      "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties": {
+        "HealthCheckPath": "/status-check",
+        "Name": "btg-pactual-group",
+        "Port": 80,
+        "Protocol": "HTTP",
+        "TargetType": "ip",
+        "HealthCheckProtocol": "HTTP",
+        "VpcId": {
+          "Ref": "VpcID"
+        }
+      }
+    },
+    "Listener": {
+      "Type": "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties": {
+        "DefaultActions": [
+          {
+            "Type": "forward",
+            "TargetGroupArn": {
+              "Ref": "TargetGroup"
+            }
+          }
+        ],
+        "LoadBalancerArn": {
+          "Ref": "LoadBalancer"
+        },
+        "Port": 80,
+        "Protocol": "HTTP"
+      }
+    }
+  },
+  "Outputs": {
+    "ClusterName": {
+      "Description": "The cluster used to create the service.",
+      "Value": {
+        "Ref": "ECSClusterName"
+      }
+    },
+    "ECSService": {
+      "Description": "The created service.",
+      "Value": {
+        "Ref": "ECSService"
+      }
+    },
+    "LoadBalancer": {
+      "Description": "The created load balancer.",
+      "Value": {
+        "Ref": "LoadBalancer"
+      }
+    },
+    "Listener": {
+      "Description": "The created listener.",
+      "Value": {
+        "Ref": "Listener"
+      }
+    },
+    "TargetGroup": {
+      "Description": "The created target group.",
+      "Value": {
+        "Ref": "TargetGroup"
+      }
+    }
+  }
+}
