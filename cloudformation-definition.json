@@ -195,7 +195,7 @@
             },
             "PortMappings": [
               {
-                "ContainerPort": 3333
+                "ContainerPort": 3000
               }
             ]
           }
@@ -224,7 +224,7 @@
         "LoadBalancers": [
           {
             "ContainerName": "btg-pactual-container",
-            "ContainerPort": 3333,
+            "ContainerPort": 3000,
             "TargetGroupArn": {
               "Ref": "TargetGroup"
             }
