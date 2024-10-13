@@ -15,7 +15,9 @@ export default (server: Server) => {
 
   server.get("/api/me/:id", (req, res, next) => {
     (async () => {
-      const data = await getUserMe.run(req.params.id);
+      const data = await getUserMe.run({
+        _id: req.params.id,
+      });
       return createHttpResponse(req, res, next, data);
     })();
   });
