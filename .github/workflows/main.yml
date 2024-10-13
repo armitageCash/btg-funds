@@ -76,4 +76,4 @@ jobs:
       - name: cloudformation-stack-up
         run: |
           # Cambia la ruta al script Bash que deseas ejecutar
-          bash cloudformation-up.sh
+          bash deploy--stack.sh
