@@ -18,11 +18,6 @@ server.get("/status-check", (req, res, next) => {
   return next();
 });
 
-server.get("/health-ckeck", (req, res, next) => {
-  res.send(200, { message: "¡Ok!" });
-  return next();
-});
-
 server.listen(process.env.PORT || 3000, async () => {
   const connection = new Database(
     process.env.MONGO_URI?.toString() || "mongodb://testdb:27017/testdb"
