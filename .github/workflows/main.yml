@@ -58,6 +58,16 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+      - name: Check if ECS cluster exists
+        id: check-ecs-cluster
+        run: |
+          cluster_exists=$(aws ecs describe-clusters --clusters ${{ env.ECS_CLUSTER }} --region ${{ env.AWS_REGION }} --query 'clusters[0].clusterName' --output text)
+          if [ "$cluster_exists" == "None" ]; then
+            echo "Cluster does not exist. Creating cluster..."
+            aws ecs create-cluster --cluster-name ${{ env.ECS_CLUSTER }} --region ${{ env.AWS_REGION }}
+          else
+            echo "Cluster exists: $cluster_exists"
+          fi
       - name: Check if ECS service exists
         id: check-ecs-service
         run: |
