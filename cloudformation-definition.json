@@ -44,7 +44,7 @@
         "ContainerDefinitions": [
           {
             "Name": "btg-pactual-container",
-            "Image": "070645455129.dkr.ecr.us-east-2.amazonaws.com/btg-pactual-ecr-repository:latest",
+            "Image": "070645455129.dkr.ecr.us-east-2.amazonaws.com/btg/btg-funds:latest",
             "PortMappings": [
               {
                 "ContainerPort": 3333
