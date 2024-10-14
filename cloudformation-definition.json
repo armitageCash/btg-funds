@@ -325,61 +325,15 @@
   },
   "Outputs": {
     "ClusterName": {
-      "Description": "The cluster used to create the service.",
+      "Description": "The ECS cluster name",
       "Value": {
-        "Ref": "ECSClusterName"
+        "Ref": "ECSCluster"
       }
     },
-    "ECSService": {
-      "Description": "The created service.",
+    "LoadBalancerDNS": {
+      "Description": "DNS name of the Load Balancer",
       "Value": {
-        "Ref": "ECSService"
-      }
-    },
-    "LoadBalancer": {
-      "Description": "The created load balancer.",
-      "Value": {
-        "Ref": "LoadBalancer"
-      }
-    },
-    "Listener": {
-      "Description": "The created listener.",
-      "Value": {
-        "Ref": "Listener"
-      }
-    },
-    "TargetGroup": {
-      "Description": "The created target group.",
-      "Value": {
-        "Ref": "TargetGroup"
-      }
-    },
-    "VPC": {
-      "Description": "The created VPC.",
-      "Value": {
-        "Ref": "VPC"
-      }
-    },
-    "PublicSubnets": {
-      "Description": "The public subnets in the VPC.",
-      "Value": {
-        "Fn::Join": [
-          ", ",
-          [
-            {
-              "Ref": "PublicSubnet1"
-            },
-            {
-              "Ref": "PublicSubnet2"
-            }
-          ]
-        ]
-      }
-    },
-    "ECSSecurityGroup": {
-      "Description": "The security group for ECS tasks.",
-      "Value": {
-        "Ref": "ECSSecurityGroup"
+        "Fn::GetAtt": ["LoadBalancer", "DNSName"]
       }
     }
   }
