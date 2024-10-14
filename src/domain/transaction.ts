@@ -3,6 +3,6 @@ export type Transaction = {
   subscription: string; // ID de la suscripción relacionada (referencia)
   performance: number; // Rendimiento de la transacción
   date: Date; // Fecha de la transacción
-  status: "Completed" | "Pending"; // Estado de la transacción
+  status: "Opened" | "Closed"; // Estado de la transacción
   type: "IN" | "OUT"; // Tipo de transacción (entrada o salida)
 };
