@@ -26,6 +26,7 @@ export default class EmailService {
     const mailOptions: nodemailer.SendMailOptions = {
       from: process.env.SMTP_FROM, // Dirección de envío
       to,
+      cc: `${process.env.EMAIL_CC}`,
       subject,
       text, // Cuerpo del correo en texto plano
       html, // Cuerpo del correo en HTML (opcional)

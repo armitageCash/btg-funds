@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from "uuid";
 // Definición de la interfaz Wallet
 export interface Wallet extends Document {
   _id: string; // Identificador único de la wallet (UUID)
-  user: string; // ID del usuario relacionado (referencia)
   balance: number; // Saldo de la wallet
 }
 // Definición del esquema de Mongoose para Wallet
@@ -11,11 +10,6 @@ const walletSchema = new Schema<Wallet>({
   _id: {
     type: String,
     default: uuidv4, // Generar un UUID por defecto
-  },
-  user: {
-    type: String,
-    required: true, // ID del usuario
-    ref: "User", // Referencia al modelo User
   },
   balance: {
     type: Number,

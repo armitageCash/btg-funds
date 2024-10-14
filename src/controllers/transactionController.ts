@@ -16,9 +16,11 @@ export default class TransactionController {
   async getMeTxs(params: InputTx): Promise<Transaction[] | undefined> {
     try {
       const filter: RootFilterQuery<Transaction> = {
-        "subscription.user": { $eq: new mongoose.Types.ObjectId(params._id) },
+        "subscription.user": { $eq: params._id },
       };
       const txs = await this.transactionRepository.find(filter);
+      console.log(txs);
+
       return txs;
     } catch (error) {
       console.log("error getting funds", error);

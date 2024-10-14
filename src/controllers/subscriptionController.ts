@@ -5,17 +5,23 @@ import { fundModel } from "@/infrastructure/persistence/mongoose/models/fund";
 import { userModel } from "@/infrastructure/persistence/mongoose/models/user";
 import { SubscriptionRepository } from "@/repositories/subscriptionRepository";
 import { TransactionRepository } from "@/repositories/transactionRepository";
+import { UserRepository } from "@/repositories/userRepository";
+import { WalletRepository } from "@/repositories/walletRepository";
 import EmailService from "@/services/email";
 
 export default class SubscriptionController {
   subscriptionRepository: SubscriptionRepository;
   transactionRepository: TransactionRepository;
+  walletRepository: WalletRepository;
+  userRepository: UserRepository;
   mailService: EmailService;
 
   constructor() {
     this.subscriptionRepository = new SubscriptionRepository();
     this.transactionRepository = new TransactionRepository();
+    this.walletRepository = new WalletRepository();
     this.mailService = new EmailService();
+    this.userRepository = new UserRepository();
   }
 
   async create(

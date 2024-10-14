@@ -3,7 +3,6 @@ import FundController from "../../../../src/controllers/fundController";
 import { Fund } from "../../../../src/domain/fund";
 import { RootFilterQuery } from "mongoose";
 
-// Mock del controlador para evitar interacciones con la base de datos real
 jest.mock("@/controllers/fundController");
 
 describe("FundServiceImpl", () => {
