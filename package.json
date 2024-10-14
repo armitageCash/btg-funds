@@ -33,6 +33,7 @@
     "nodemailer": "^6.9.15",
     "pino": "^9.4.0",
     "restify": "^11.1.0",
+    "restify-cors-middleware2": "^2.2.1",
     "tsconfig-paths": "^4.2.0",
     "urunner-lib": "^1.0.0",
     "uuid": "^10.0.0"

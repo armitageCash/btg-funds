@@ -10,7 +10,8 @@ export interface User extends Document {
   email: string; // Correo electrónico
   password: string; // Contraseña
   createdAt: Date; // Fecha de creación de la cuenta
-  updatedAt: Date; // Fecha de la última actualización
+  updatedAt: Date;
+  wallet: string; // Fecha de la última actualización
 }
 
 // Definición del esquema de Mongoose para User
@@ -18,6 +19,11 @@ const userSchema = new Schema<User>({
   _id: {
     type: String,
     default: uuidv4, // Generar un UUID por defecto
+  },
+  wallet: {
+    type: String,
+    required: true, // ID de la suscripción
+    ref: "wallet", // Referencia al modelo Subscription
   },
   username: { type: String, required: true, unique: true }, // Nombre de usuario único
   firstName: { type: String, required: true }, // Primer nombre

@@ -3,11 +3,22 @@ import restify from "restify";
 import routes from "@/infrastructure/routes";
 import DatabaseService from "@/services/database";
 import Database from "@/services/database";
+import corsMiddleware from "restify-cors-middleware2";
 
 const server = restify.createServer({
   name: "btg-fund-api",
   version: "1.0.0",
 });
+
+const cors = corsMiddleware({
+  preflightMaxAge: 5, //Optional
+  origins: ["*"],
+  allowHeaders: ["API-Token"],
+  exposeHeaders: ["API-Token-Expiry"],
+});
+
+server.pre(cors.preflight);
+server.use(cors.actual);
 
 routes(server);
 

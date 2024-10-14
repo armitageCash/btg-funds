@@ -1,4 +1,5 @@
 import getFundCase from "@/cases/get-funds";
+import getMeTxs from "@/cases/get-me-txs";
 import getUserMe from "@/cases/get-user-me";
 import postSubscription from "@/cases/post-subscription-fund";
 import putSubscription from "@/cases/put-subscription-fund";
@@ -16,6 +17,15 @@ export default (server: Server) => {
   server.get("/api/me/:id", (req, res, next) => {
     (async () => {
       const data = await getUserMe.run({
+        _id: req.params.id,
+      });
+      return createHttpResponse(req, res, next, data);
+    })();
+  });
+
+  server.get("/api/txs/:me", (req, res, next) => {
+    (async () => {
+      const data = await getMeTxs.run({
         _id: req.params.id,
       });
       return createHttpResponse(req, res, next, data);
