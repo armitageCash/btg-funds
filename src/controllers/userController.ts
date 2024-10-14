@@ -2,6 +2,7 @@ import { Input } from "@/cases/get-user-me/types";
 import { RootFilterQuery } from "mongoose";
 import { UserRepository } from "@/repositories/userRepository";
 import { User } from "@/domain/user";
+import { walletModel } from "@/infrastructure/persistence/mongoose/models/wallet";
 
 export default class UserController {
   userRepository: UserRepository;
@@ -22,6 +23,7 @@ export default class UserController {
   async getUser(params: Input): Promise<User | null> {
     try {
       const user = await this.userRepository.findOne(params._id);
+      user?.populate([{ path: "wallet", model: walletModel }]);
       return user || null;
     } catch (error) {
       console.log("error getting User", error);

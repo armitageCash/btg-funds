@@ -1,3 +1,4 @@
+import { Wallet } from "@/domain/wallet";
 import { Schema, model, Document } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 
@@ -11,7 +12,7 @@ export interface User extends Document {
   password: string; // Contraseña
   createdAt: Date; // Fecha de creación de la cuenta
   updatedAt: Date;
-  wallet: string; // Fecha de la última actualización
+  wallet: Wallet; // Fecha de la última actualización
 }
 
 // Definición del esquema de Mongoose para User

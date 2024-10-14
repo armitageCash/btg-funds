@@ -1,7 +1,6 @@
 import "module-alias/register";
 import restify from "restify";
-import routes from "@/infrastructure/routes";
-import DatabaseService from "@/services/database";
+import routes from "@/infrastructure/http/routes";
 import Database from "@/services/database";
 import corsMiddleware from "restify-cors-middleware2";
 
@@ -23,6 +22,11 @@ server.use(cors.actual);
 routes(server);
 
 server.use(restify.plugins.bodyParser());
+
+server.get("/", (req, res, next) => {
+  res.send(200, { message: "¡Hola, mundo!" });
+  return next();
+});
 
 server.get("/status-check", (req, res, next) => {
   res.send(200, { message: "¡Hola, mundo!" });

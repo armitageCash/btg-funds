@@ -4,7 +4,7 @@ import getUserMe from "@/cases/get-user-me";
 import postSubscription from "@/cases/post-subscription-fund";
 import putSubscription from "@/cases/put-subscription-fund";
 import { Server } from "restify";
-import { createHttpResponse } from "../http/response";
+import { createHttpResponse } from "../response";
 
 export default (server: Server) => {
   server.get("/api/funds", (req, res, next) => {
