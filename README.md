@@ -9,6 +9,7 @@ Este es un proyecto para el Fondo Voluntario de Pensión de BTG Pactual Colombia
 - [Instalación](#instalación)
 - [Instrucciones para levantar el proyecto](#instrucciones-para-levantar-el-proyecto)
 - [Flujo de CI/CD](#flujo-de-cicd)
+- [Arquitectura del Sistema](#arquitectura-del-sistema)
 - [Arquitectura Desacoplada](#arquitectura-desacoplada)
 - [Ventajas de la Arquitectura Desacoplada](#ventajas-de-la-arquitectura-desacoplada)
 - [Contribuciones](#contribuciones)
@@ -74,6 +75,37 @@ Al realizar un pull a la rama main, se ejecutan las siguientes acciones en el pi
 3. **Despliegue**: Si las pruebas pasan y la construcción es exitosa, el proyecto se despliega automáticamente en el entorno de producción.
 
 Este flujo garantiza que el código en main siempre sea estable y esté listo para ser utilizado en producción.
+
+## Arquitectura del Sistema
+
+Esta arquitectura representa una solución moderna y altamente escalable desplegada en Amazon Web Services (AWS), diseñada para alojar una aplicación containerizada. Vamos a desglosar los componentes principales y explicar cómo trabajan juntos para proporcionar una infraestructura robusta y flexible:
+
+1. **Red Virtual (VPC)**: Se crea una Virtual Private Cloud (VPC) dedicada con un rango de IP privado (10.0.0.0/16). Esto proporciona un entorno de red aislado y seguro para todos los recursos del sistema.
+
+2. **Subredes Públicas**: Se configuran dos subredes públicas en diferentes zonas de disponibilidad. Esto aumenta la redundancia y la tolerancia a fallos, asegurando que el sistema pueda seguir funcionando incluso si una zona de AWS falla.
+
+3. **Internet Gateway y Tablas de Rutas**: Se incluye un Internet Gateway y las tablas de rutas necesarias para permitir la comunicación entre las subredes públicas e Internet, facilitando el acceso externo a la aplicación.
+
+4. **Clúster ECS (Elastic Container Service)**: Se crea un clúster ECS para gestionar y orquestar los contenedores de la aplicación. ECS proporciona una plataforma escalable para ejecutar aplicaciones containerizadas.
+
+5. **Definición de Tarea ECS**: Se define una tarea ECS que especifica cómo debe ejecutarse el contenedor de la aplicación. Esta tarea está configurada para usar Fargate, lo que significa que no necesitas gestionar la infraestructura subyacente de los servidores.
+
+6. **Servicio ECS**: Se configura un servicio ECS para mantener en ejecución el número deseado de instancias de la tarea definida. Esto asegura que la aplicación esté siempre disponible y puede escalar automáticamente según sea necesario.
+
+7. **Balanceador de Carga de Aplicaciones (ALB)**: Se implementa un Application Load Balancer para distribuir el tráfico entrante entre las diferentes instancias de la aplicación. Esto mejora la disponibilidad y la capacidad de manejar cargas de trabajo variables.
+
+8. **Grupo de Destino**: Se crea un grupo de destino para el ALB, que define dónde y cómo se enrutan las solicitudes a las instancias de la aplicación.
+
+9. **Seguridad**: Se implementa un grupo de seguridad para controlar el tráfico de red hacia y desde los recursos de ECS, permitiendo solo el tráfico necesario en los puertos requeridos.
+
+Esta arquitectura es altamente escalable por varias razones:
+
+- **Uso de Fargate**: Permite escalar la aplicación sin preocuparse por la gestión de la infraestructura subyacente.
+- **Múltiples zonas de disponibilidad**: Proporciona alta disponibilidad y resistencia a fallos.
+- **Balanceador de carga**: Distribuye el tráfico eficientemente y permite escalar horizontalmente añadiendo más instancias de la aplicación.
+- **ECS**: Facilita la gestión y el escalado de contenedores, permitiendo aumentar o disminuir rápidamente el número de instancias de la aplicación según la demanda.
+
+Además, esta arquitectura es flexible y puede adaptarse fácilmente a medida que crecen las necesidades del sistema. Por ejemplo, se pueden agregar más servicios, implementar un registro de contenedores privado, o integrar con otros servicios de AWS como RDS para bases de datos o S3 para almacenamiento.
 
 ## Arquitectura Desacoplada
 
