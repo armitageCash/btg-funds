@@ -41,7 +41,6 @@ jobs:
           IMAGE_TAG: latest
         run: |
           docker build --build-arg PM2_PUBLIC_KEY=${{ secrets.PM2_PUBLIC_KEY }} --build-arg PM2_SECRET_KEY=${{ secrets.PM2_SECRET_KEY }} -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
   cloudformation-stack-up:
