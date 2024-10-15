@@ -33,7 +33,7 @@ server.get("/status-check", (req, res, next) => {
   return next();
 });
 
-server.listen(process.env.PORT || 3000, "localhost", async () => {
+server.listen(process.env.PORT || 3000, "0.0.0.0", async () => {
   const connection = new Database(
     process.env.MONGO_URI?.toString() || "mongodb://testdb:27017/testdb"
   );
