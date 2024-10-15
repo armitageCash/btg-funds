@@ -3,9 +3,16 @@ FROM node:18
 
 # Establece el directorio de trabajo en /app
 WORKDIR /app
+# Define los argumentos que se pasarán durante la construcción
+ARG PM2_PUBLIC_KEY
+ARG PM2_SECRET_KEY
 
 # Copia el archivo package.json y package-lock.json al directorio de trabajo
 COPY package*.json ./
+
+RUN npm install pm2 -g
+ENV PM2_PUBLIC_KEY cts1ekpo1h56t2q
+ENV PM2_SECRET_KEY oo0vcyac6bxutyb
 
 # Instala las dependencias del proyecto
 RUN npm install
@@ -17,4 +24,4 @@ COPY . .
 EXPOSE 3000
 
 # Comando para ejecutar la aplicación cuando se inicie el contenedor
-CMD ["npm", "start"]
+CMD ["pm2-runtime", "dist/src/infrastructure/http/server.js"]
