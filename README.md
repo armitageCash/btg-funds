@@ -12,6 +12,7 @@ Este es un proyecto para el Fondo Voluntario de Pensión de BTG Pactual Colombia
 - [Arquitectura del Sistema](#arquitectura-del-sistema)
 - [Arquitectura Desacoplada](#arquitectura-desacoplada)
 - [Ventajas de la Arquitectura Desacoplada](#ventajas-de-la-arquitectura-desacoplada)
+- [Solucion del problema punto 2](#punto-2)
 - [Contribuciones](#contribuciones)
 
 ## Descripción del Proyecto
@@ -122,6 +123,44 @@ El proyecto btg-funds está diseñado utilizando una arquitectura desacoplada, d
 - **Flexibilidad**: Se pueden cambiar las implementaciones del servidor o del almacenamiento de datos sin afectar la lógica de negocio, lo que permite una fácil adaptación a nuevas tecnologías o requisitos.
 
 - **Reusabilidad**: Los casos de uso pueden ser reutilizados en diferentes contextos o aplicaciones, lo que ahorra tiempo y esfuerzo en el desarrollo.
+
+## punto-2
+
+Para resolver esta consulta SQL, es necesario combinar las tablas Cliente, Producto, Sucursal, Inscripción, Disponibilidad, y Visitan. La lógica detrás de la consulta es encontrar aquellos clientes que están inscritos en productos que están disponibles únicamente en las sucursales que ellos han visitado. Para lograr esto, debes hacer un JOIN de varias tablas y asegurarte de que los productos que están inscritos por los clientes solo se encuentran en las sucursales que han visitado.
+
+Aquí te dejo la consulta SQL para obtener los nombres de los clientes que cumplen con esas condiciones:
+
+```sql
+SELECT DISTINCT c.nombre, c.apellidos
+FROM Cliente c
+JOIN Inscripción i ON c.id = i.idCliente
+JOIN Producto p ON i.idProducto = p.id
+JOIN Disponibilidad d ON p.id = d.idProducto
+JOIN Sucursal s ON d.idSucursal = s.id
+JOIN Visitan v ON c.id = v.idCliente AND s.id = v.idSucursal
+WHERE p.id IN (
+ SELECT d.idProducto
+ FROM Disponibilidad d
+ WHERE d.idSucursal IN (
+     SELECT v.idSucursal
+     FROM Visitan v
+     WHERE v.idCliente = c.id
+ )
+);
+```
+
+Explicación:
+JOIN de tablas: Se realizan varias combinaciones entre las tablas Cliente, Inscripción, Producto, Disponibilidad, Sucursal, y Visitan para relacionar a los clientes con los productos y sucursales.
+
+Condición de inscripción: Usamos JOIN para unir las tablas Inscripción y Producto, de forma que podamos conocer los productos a los que cada cliente está inscrito.
+
+Condición de disponibilidad: Se unen las tablas Disponibilidad y Sucursal para conocer qué productos están disponibles en las distintas sucursales.
+
+Condición de visita: Se asegura que el cliente haya visitado la sucursal donde está disponible el producto, relacionando la tabla Visitan.
+
+Subconsulta: Se incluye una subconsulta para verificar que el producto inscrito por el cliente esté disponible en alguna sucursal que haya visitado.
+
+Este enfoque permite filtrar correctamente los clientes que cumplen con la condición de estar inscritos en productos que solo están disponibles en las sucursales que han visitado.
 
 ## Contribuciones
 
