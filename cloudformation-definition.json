@@ -162,21 +162,9 @@
         ],
         "SecurityGroupEgress": [
           {
-            "IpProtocol": "tcp",
-            "FromPort": 443,
-            "ToPort": 443,
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": 80,
-            "ToPort": 80,
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": 27017,
-            "ToPort": 27017,
+            "IpProtocol": "-1",
+            "FromPort": 0,
+            "ToPort": 0,
             "CidrIp": "0.0.0.0/0"
           }
         ],
