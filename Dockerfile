@@ -11,9 +11,6 @@ ARG PM2_SECRET_KEY
 COPY package*.json ./
 
 RUN npm install pm2 -g
-ENV PM2_PUBLIC_KEY cts1ekpo1h56t2q
-ENV PM2_SECRET_KEY oo0vcyac6bxutyb
-
 # Instala las dependencias del proyecto
 RUN npm install
 
