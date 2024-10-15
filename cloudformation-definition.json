@@ -176,6 +176,19 @@
         ]
       }
     },
+    "LogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/ecs/btg-pactual-container-logs",
+        "RetentionInDays": 14,
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "BTG-Pactual-Logs"
+          }
+        ]
+      }
+    },
     "ECSCluster": {
       "Type": "AWS::ECS::Cluster",
       "Properties": {
@@ -205,7 +218,15 @@
               {
                 "ContainerPort": 3000
               }
-            ]
+            ],
+            "LogConfiguration": {
+              "LogDriver": "awslogs",
+              "Options": {
+                "awslogs-group": { "Ref": "LogGroup" },
+                "awslogs-region": { "Ref": "AWS::Region" },
+                "awslogs-stream-prefix": "ecs"
+              }
+            }
           }
         ]
       }
