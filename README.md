@@ -65,7 +65,7 @@ Para construir el proyecto y ejecutar el servidor en modo producción, sigue est
    npm start
    ```
 
-El servidor estará disponible en el puerto 8080 por defecto.
+El servidor estará disponible en el puerto 3000 por defecto.
 
 ## Flujo de CI/CD
 
