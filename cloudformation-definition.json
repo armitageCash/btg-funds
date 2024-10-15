@@ -190,8 +190,8 @@
         "Family": "btg-pactual-definition",
         "NetworkMode": "awsvpc",
         "RequiresCompatibilities": ["FARGATE"],
-        "Cpu": "256",
-        "Memory": "512",
+        "Cpu": "512",
+        "Memory": "1024",
         "ExecutionRoleArn": {
           "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/ecsTaskExecutionRole"
         },
@@ -206,9 +206,9 @@
                 "ContainerPort": 3000
               }
             ],
-            "logConfiguration": {
-              "logDriver": "awslogs",
-              "options": {
+            "LogConfiguration": {
+              "LogDriver": "awslogs",
+              "Options": {
                 "awslogs-group": "/ecs/btg-pactual-logs",
                 "awslogs-region": "${AWS::Region}",
                 "awslogs-stream-prefix": "ecs"
@@ -336,20 +336,6 @@
         },
         "Port": 80,
         "Protocol": "HTTP"
-      }
-    }
-  },
-  "Outputs": {
-    "ClusterName": {
-      "Description": "The ECS cluster name",
-      "Value": {
-        "Ref": "ECSCluster"
-      }
-    },
-    "LoadBalancerDNS": {
-      "Description": "DNS name of the Load Balancer",
-      "Value": {
-        "Fn::GetAtt": ["LoadBalancer", "DNSName"]
       }
     }
   }
