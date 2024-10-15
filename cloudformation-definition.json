@@ -205,15 +205,7 @@
               {
                 "ContainerPort": 3000
               }
-            ],
-            "LogConfiguration": {
-              "LogDriver": "awslogs",
-              "Options": {
-                "awslogs-group": "/ecs/btg-pactual-logs",
-                "awslogs-region": "${AWS::Region}",
-                "awslogs-stream-prefix": "ecs"
-              }
-            }
+            ]
           }
         ]
       }
