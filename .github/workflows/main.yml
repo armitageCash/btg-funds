@@ -12,6 +12,8 @@ env:
   ECS_CLUSTER: btg-pactual-cluster
   ECS_TASK_DEFINITION: btg-pactual-task-definition
   CONTAINER_NAME: btg-pactual-container
+  PM2_PUBLIC_KEY: ${{ secrets.PM2_PUBLIC_KEY }}
+  PM2_SECRET_KEY: ${{ secrets.PM2_SECRET_KEY }}
 
 jobs:
   create-docker-image:
@@ -40,7 +42,7 @@ jobs:
           ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
           IMAGE_TAG: latest
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build --build-arg ${{ secrets.PM2_PUBLIC_KEY }} --build-arg ${{ secrets.PM2_SECRET_KEY }} -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
