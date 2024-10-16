@@ -160,11 +160,18 @@
             "CidrIp": "0.0.0.0/0"
           }
         ],
+
         "SecurityGroupEgress": [
           {
             "IpProtocol": "-1",
             "FromPort": -1,
             "ToPort": -1,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "-1",
+            "FromPort": 3000,
+            "ToPort": 3000,
             "CidrIp": "0.0.0.0/0"
           }
         ],
@@ -198,37 +205,116 @@
       }
     },
     "ECSTaskDefinition": {
-      "Type": "AWS::ECS::TaskDefinition",
-      "Properties": {
-        "Family": "btg-pactual-definition",
-        "NetworkMode": "awsvpc",
-        "RequiresCompatibilities": ["FARGATE"],
-        "Cpu": "512",
-        "Memory": "1024",
-        "ExecutionRoleArn": {
-          "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/ecsTaskExecutionRole"
-        },
-        "ContainerDefinitions": [
-          {
-            "Name": "btg-pactual-container",
-            "Image": {
-              "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/btg/btg-funds:latest"
-            },
-            "PortMappings": [
-              {
-                "ContainerPort": 3000
-              }
-            ],
-            "LogConfiguration": {
-              "LogDriver": "awslogs",
-              "Options": {
-                "awslogs-group": { "Ref": "LogGroup" },
-                "awslogs-region": { "Ref": "AWS::Region" },
-                "awslogs-stream-prefix": "ecs"
-              }
+      "taskDefinitionArn": "arn:aws:ecs:us-east-2:070645455129:task-definition/btg-task-definition",
+      "containerDefinitions": [
+        {
+          "name": "btg-container",
+          "image": "070645455129.dkr.ecr.us-east-2.amazonaws.com/btg/btg-funds:latest",
+          "cpu": 0,
+          "portMappings": [
+            {
+              "containerPort": 3000,
+              "hostPort": 3000,
+              "protocol": "tcp",
+              "name": "http",
+              "appProtocol": "http"
             }
-          }
-        ]
+          ],
+          "essential": true,
+          "environment": [],
+          "environmentFiles": [],
+          "mountPoints": [],
+          "volumesFrom": [],
+          "startTimeout": 2,
+          "stopTimeout": 120,
+          "workingDirectory": "/app",
+          "ulimits": [],
+          "logConfiguration": {
+            "logDriver": "awslogs",
+            "options": {
+              "awslogs-group": "/ecs/btg-task-definition",
+              "mode": "non-blocking",
+              "awslogs-create-group": "true",
+              "max-buffer-size": "25m",
+              "awslogs-region": "us-east-2",
+              "awslogs-stream-prefix": "ecs"
+            },
+            "secretOptions": []
+          },
+          "healthCheck": {
+            "command": ["curl -f http://localhost:3000/status-check"],
+            "interval": 30,
+            "timeout": 5,
+            "retries": 5,
+            "startPeriod": 20
+          },
+          "systemControls": []
+        }
+      ],
+      "family": "btg-task-definition",
+      "taskRoleArn": "arn:aws:iam::070645455129:role/ecsTaskExecutionRole",
+      "executionRoleArn": "arn:aws:iam::070645455129:role/ecsTaskExecutionRole",
+      "networkMode": "awsvpc",
+      "revision": 2,
+      "volumes": [],
+      "status": "ACTIVE",
+      "requiresAttributes": [
+        {
+          "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+          "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
+          "name": "com.amazonaws.ecs.capability.docker-remote-api.1.17"
+        },
+        {
+          "name": "com.amazonaws.ecs.capability.docker-remote-api.1.28"
+        },
+        {
+          "name": "com.amazonaws.ecs.capability.task-iam-role"
+        },
+        {
+          "name": "ecs.capability.container-health-check"
+        },
+        {
+          "name": "ecs.capability.execution-role-ecr-pull"
+        },
+        {
+          "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        },
+        {
+          "name": "ecs.capability.task-eni"
+        },
+        {
+          "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
+        },
+        {
+          "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+        },
+        {
+          "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+          "name": "ecs.capability.container-ordering"
+        },
+        {
+          "name": "ecs.capability.extensible-ephemeral-storage"
+        }
+      ],
+      "placementConstraints": [],
+      "compatibilities": ["EC2", "FARGATE"],
+      "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+      },
+      "requiresCompatibilities": ["FARGATE"],
+      "cpu": "1024",
+      "memory": "2048",
+      "registeredAt": "2024-10-15T22:36:46.521000-05:00",
+      "registeredBy": "arn:aws:iam::070645455129:user/Andrew",
+      "ephemeralStorage": {
+        "sizeInGiB": 21
       }
     },
     "ECSService": {

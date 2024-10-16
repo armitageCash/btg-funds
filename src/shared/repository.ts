@@ -10,12 +10,12 @@ export default abstract class Repository<T extends Document> {
 
   // Método para buscar múltiples documentos con un query
   async find(query: RootFilterQuery<T>): Promise<T[]> {
-    return this.model.find(query || {}).exec();
+    return this.model.find(query || {});
   }
 
   // Método para buscar un solo documento por su ID
-  async findOne(id: string): Promise<T | null> {
-    return this.model.findById(id).exec();
+  async findOne(id: String) {
+    return this.model.findById(id);
   }
 
   // Método para crear un documento
@@ -25,7 +25,7 @@ export default abstract class Repository<T extends Document> {
   }
 
   // Método para actualizar un documento por su ID
-  async updateOne(id: string, data: Partial<T>): Promise<T | null> {
+  async updateOne(id: String, data: Partial<T>): Promise<T | null> {
     return this.model.findByIdAndUpdate(id, data, { new: true }).exec();
   }
 

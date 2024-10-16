@@ -19,8 +19,6 @@ export default class TransactionController {
         "subscription.user": { $eq: params._id },
       };
       const txs = await this.transactionRepository.find(filter);
-      console.log(txs);
-
       return txs;
     } catch (error) {
       console.log("error getting funds", error);

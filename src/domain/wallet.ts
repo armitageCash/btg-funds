@@ -1,4 +1,4 @@
 export type Wallet = {
-  _id: string;
+  _id: String;
   balance: number;
 };

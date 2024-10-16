@@ -19,20 +19,20 @@ export interface User extends Document {
 const userSchema = new Schema<User>({
   _id: {
     type: String,
-    default: uuidv4, // Generar un UUID por defecto
+    default: uuidv4,
   },
   wallet: {
     type: String,
-    required: true, // ID de la suscripción
-    ref: "wallet", // Referencia al modelo Subscription
+    required: true,
+    ref: "Wallet",
   },
-  username: { type: String, required: true, unique: true }, // Nombre de usuario único
-  firstName: { type: String, required: true }, // Primer nombre
-  lastName: { type: String, required: true }, // Apellido
-  email: { type: String, required: true, unique: true }, // Correo electrónico único
-  password: { type: String, required: true }, // Contraseña
-  createdAt: { type: Date, default: Date.now }, // Fecha de creación
-  updatedAt: { type: Date, default: Date.now }, // Fecha de actualización
+  username: { type: String, required: true, unique: true },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
 });
 
 // Crear el modelo de Mongoose

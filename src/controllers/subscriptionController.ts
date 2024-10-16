@@ -3,6 +3,7 @@ import { Input as InputUpdate } from "@/cases/put-subscription-fund/types";
 import { Subscription, SubscriptionDetailed } from "@/domain/subscription";
 import { fundModel } from "@/infrastructure/persistence/mongoose/models/fund";
 import { userModel } from "@/infrastructure/persistence/mongoose/models/user";
+import { walletModel } from "@/infrastructure/persistence/mongoose/models/wallet";
 import { SubscriptionRepository } from "@/repositories/subscriptionRepository";
 import { TransactionRepository } from "@/repositories/transactionRepository";
 import { UserRepository } from "@/repositories/userRepository";
@@ -81,7 +82,14 @@ export default class SubscriptionController {
       if (subscription) {
         const subscriptiondetailed: SubscriptionDetailed =
           await subscription.populate([
-            { path: "user", model: userModel },
+            {
+              path: "user",
+              model: userModel,
+              populate: {
+                path: "wallet",
+                model: walletModel,
+              },
+            },
             { path: "fund", model: fundModel },
           ]);
 
@@ -92,6 +100,20 @@ export default class SubscriptionController {
           status: subscription.status,
           type: "OUT",
         });
+
+        const wallet = await this.walletRepository.findOne(
+          subscriptiondetailed.user.wallet._id
+        );
+
+        if (wallet) {
+          const balance = wallet.balance + subscription.amount;
+          await this.walletRepository.updateOne(
+            subscriptiondetailed.user.wallet._id,
+            {
+              balance,
+            }
+          );
+        }
 
         const msg = await this.mailService.renderTemplate(
           "updateSubscription",
@@ -107,7 +129,7 @@ export default class SubscriptionController {
 
         await this.mailService.sendEmail(
           subscriptiondetailed.user.email,
-          "Información de actualización de suscripción",
+          "Información de actualización de subscripción",
           "",
           msg
         );
@@ -115,7 +137,7 @@ export default class SubscriptionController {
 
       return subscription || undefined;
     } catch (error) {
-      console.log("Error actualizando la suscripción:", error);
+      console.log("Error actualizando la subscripción:", error);
     }
   }
 }
