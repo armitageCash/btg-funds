@@ -9,7 +9,11 @@ template_file="cloudformation-definition.json"
 # Región de AWS donde deseas crear la pila
 region="us-east-2"
 
+# Nombre del clúster y servicio de ECS
+ecs_cluster_name="btg-pactual-cluster"
+ecs_service_name="btg-pactual-service"
 # Función para obtener el estado de la pila
+
 get_stack_status() {
     aws cloudformation describe-stacks --stack-name "$stack_name" --region "$region" --query 'Stacks[0].StackStatus' --output text
 }
