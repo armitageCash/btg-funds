@@ -206,14 +206,6 @@
                 "ContainerPort": 3000
               }
             ],
-            "LogConfiguration": {
-              "LogDriver": "awslogs",
-              "Options": {
-                "awslogs-group": "/ecs/btg-pactual-logs",
-                "awslogs-region": "${AWS::Region}",
-                "awslogs-stream-prefix": "ecs"
-              }
-            },
             "healthCheck": {
               "command": ["CMD-SHELL", "curl -f http://localhost || exit 1"],
               "interval": 60,
