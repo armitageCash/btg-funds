@@ -13,7 +13,6 @@ region="us-east-2"
 ecs_cluster_name="btg-pactual-cluster"
 ecs_service_name="btg-pactual-service"
 # Función para obtener el estado de la pila
-
 get_stack_status() {
     aws cloudformation describe-stacks --stack-name "$stack_name" --region "$region" --query 'Stacks[0].StackStatus' --output text
 }
@@ -30,7 +29,7 @@ if aws cloudformation describe-stacks --stack-name "$stack_name" --region "$regi
 
     # Esperar hasta que la actualización se complete
     echo "Esperando a que la actualización se complete..."
-    aws cloudformation wait service-update-complete --stack-name "$stack_name" --region "$region"
+    aws cloudformation wait stack-update-complete --stack-name "$stack_name" --region "$region"
 else
     # La pila no existe, créala
     echo "La pila de CloudFormation no existe. Creando..."
