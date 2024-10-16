@@ -2,7 +2,7 @@ import Joi from "joi";
 
 export const SubscriptionSchema = Joi.object({
   user: Joi.string()
-    .guid({ version: ["uuidv4"] })
+    .guid({ version: ["uuidv3"] })
     .required()
     .messages({
       "string.guid": "El usuario debe ser un UUID válido",
