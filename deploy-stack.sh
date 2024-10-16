@@ -22,7 +22,8 @@ if aws cloudformation describe-stacks --stack-name "$stack_name" --region "$regi
         --stack-name "$stack_name" \
         --template-body "file://$template_file" \
         --region "$region" \
-        --capabilities CAPABILITY_NAMED_IAM
+        --capabilities CAPABILITY_NAMED_IAM \
+        --force-new-deployment
 
     # Esperar hasta que la actualización se complete
     echo "Esperando a que la actualización se complete..."
