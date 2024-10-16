@@ -9,9 +9,6 @@ template_file="cloudformation-definition.json"
 # Región de AWS donde deseas crear la pila
 region="us-east-2"
 
-# Nombre del clúster y servicio de ECS
-ecs_cluster_name="btg-pactual-cluster"
-ecs_service_name="btg-pactual-service"
 # Función para obtener el estado de la pila
 get_stack_status() {
     aws cloudformation describe-stacks --stack-name "$stack_name" --region "$region" --query 'Stacks[0].StackStatus' --output text
@@ -21,11 +18,11 @@ get_stack_status() {
 if aws cloudformation describe-stacks --stack-name "$stack_name" --region "$region" > /dev/null 2>&1; then
     # La pila ya existe, actualízala
     echo "La pila de CloudFormation ya existe. Actualizando..."
-    aws ecs update-service \
-        --cluster "$ecs_cluster_name" \
-        --service "$ecs_service_name" \
-        --force-new-deployment \
-        --region "$region"
+    aws cloudformation update-stack \
+        --stack-name "$stack_name" \
+        --template-body "file://$template_file" \
+        --region "$region" \
+        --capabilities CAPABILITY_NAMED_IAM
 
     # Esperar hasta que la actualización se complete
     echo "Esperando a que la actualización se complete..."
