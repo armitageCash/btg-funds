@@ -206,6 +206,7 @@
                 "ContainerPort": 3000
               }
             ],
+            "WorkingDirectory": "/app",
             "healthCheck": {
               "command": ["CMD-SHELL", "curl -f http://localhost || exit 1"],
               "interval": 60,
