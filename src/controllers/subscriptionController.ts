@@ -76,7 +76,7 @@ export default class SubscriptionController {
       return undefined;
     } catch (error) {
       console.log("Error creando la suscripción:", error);
-      return undefined; // Asegúrate de devolver undefined en caso de error
+      throw undefined; // Asegúrate de devolver undefined en caso de error
     }
   }
 
@@ -145,6 +145,7 @@ export default class SubscriptionController {
 
       return subscription || undefined;
     } catch (error) {
+      throw error;
       console.log("Error actualizando la subscripción:", error);
     }
   }
