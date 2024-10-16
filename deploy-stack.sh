@@ -18,15 +18,22 @@ get_stack_status() {
 if aws cloudformation describe-stacks --stack-name "$stack_name" --region "$region" > /dev/null 2>&1; then
     # La pila ya existe, actualízala
     echo "La pila de CloudFormation ya existe. Actualizando..."
-    aws cloudformation update-stack \
-        --stack-name "$stack_name" \
-        --template-body "file://$template_file" \
-        --region "$region" \
-        --capabilities CAPABILITY_NAMED_IAM
-
-    # Esperar hasta que la actualización se complete
-    echo "Esperando a que la actualización se complete..."
-    aws cloudformation wait stack-update-complete --stack-name "$stack_name" --region "$region"
+    # Forzar el despliegue del servicio ECS para usar la nueva imagen
+    echo "Forzando el despliegue del servicio ECS con la nueva imagen..."
+    aws ecs update-service \
+        --cluster "$ecs_cluster_name" \
+        --service "$ecs_service_name" \
+        --force-new-deployment \
+        --region "$region"
+    
+    # Esperar a que el servicio ECS esté en estado estable
+    echo "Esperando a que el servicio ECS esté en estado estable..."
+    aws ecs wait services-stable \
+        --cluster "$ecs_cluster_name" \
+        --services "$ecs_service_name" \
+        --region "$region"
+    
+    echo "Despliegue forzado del servicio ECS completado y el servicio está estable."
 else
     # La pila no existe, créala
     echo "La pila de CloudFormation no existe. Creando..."
