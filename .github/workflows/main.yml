@@ -36,6 +36,10 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
+    - name: Get short commit SHA
+      id: vars
+      run: echo "commitId=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
     - name: Install dependencies
       run: npm install
 
@@ -47,9 +51,9 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        docker build --build-arg PM2_PUBLIC_KEY="${{ secrets.PM2_PUBLIC_KEY }}" --build-arg PM2_SECRET_KEY="${{ secrets.PM2_SECRET_KEY }}" -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+        docker build --build-arg PM2_PUBLIC_KEY="${{ secrets.PM2_PUBLIC_KEY }}" --build-arg PM2_SECRET_KEY="${{ secrets.PM2_SECRET_KEY }}" -t $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.commitId }} .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.commitId }}
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:${{ env.commitId }}"
 
     - name: Run CloudFormation deployment script
       env:
@@ -62,10 +66,41 @@ jobs:
         chmod +x deploy-stack.sh
         ./deploy-stack.sh
 
-    - name: Check deployment status
-      run: |
-        status=$(aws cloudformation describe-stacks --stack-name btg-pactual-task-definition --region ${{ env.AWS_REGION }} --query 'Stacks[0].StackStatus' --output text)
-        if [[ $status != "CREATE_COMPLETE" && $status != "UPDATE_COMPLETE" ]]; then
-          echo "Deployment failed. Stack status: $status"
-          exit 1
-        fi
+  update-latest-changes:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update ECS Service with New Image
+        run: |
+          # Obtener la definición de tarea actual
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.ECS_TASK_DEFINITION }} > task-definition.json
+
+          # Reemplazar la imagen en la definición de la tarea con la nueva imagen de ECR
+          new_task_def=$(cat task-definition.json | jq --arg IMAGE "${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.commitId }}" '.taskDefinition | .containerDefinitions[0].image=$IMAGE')
+
+          # Crear una nueva revisión de la definición de tarea con la nueva imagen
+          echo $new_task_def > new-task-def.json
+          aws ecs register-task-definition \
+            --family ${{ env.ECS_TASK_DEFINITION }} \
+            --cli-input-json file://new-task-def.json
+
+      - name: Update ECS Service to Use New Task Definition
+        run: |
+          # Obtener la última revisión de la definición de tarea
+          new_revision=$(aws ecs describe-task-definition \
+            --task-definition ${{ env.ECS_TASK_DEFINITION }} \
+            --query 'taskDefinition.revision')
+
+          # Actualizar el servicio ECS con la nueva revisión de la definición de tarea
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --task-definition ${{ env.ECS_TASK_DEFINITION }}:$new_revision
+
+      - name: Wait for ECS Service to Stabilize
+        run: |
+          # Esperar a que el servicio se actualice y estabilice
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }}
