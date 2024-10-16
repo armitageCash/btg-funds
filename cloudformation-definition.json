@@ -205,7 +205,6 @@
       }
     },
     "ECSTaskDefinition": {
-      "taskDefinitionArn": "arn:aws:ecs:us-east-2:070645455129:task-definition/btg-task-definition",
       "containerDefinitions": [
         {
           "name": "btg-container",
