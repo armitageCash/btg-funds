@@ -30,7 +30,7 @@ if aws cloudformation describe-stacks --stack-name "$stack_name" --region "$regi
 
     # Esperar hasta que la actualización se complete
     echo "Esperando a que la actualización se complete..."
-    aws cloudformation wait stack-update-complete --stack-name "$stack_name" --region "$region"
+    aws cloudformation wait service-update-complete --stack-name "$stack_name" --region "$region"
 else
     # La pila no existe, créala
     echo "La pila de CloudFormation no existe. Creando..."

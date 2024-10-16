@@ -76,7 +76,7 @@ export default class SubscriptionController {
       return undefined;
     } catch (error) {
       console.log("Error creando la suscripción:", error);
-      throw undefined; // Asegúrate de devolver undefined en caso de error
+      throw error;
     }
   }
 
