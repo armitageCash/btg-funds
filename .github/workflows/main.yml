@@ -1,3 +1,5 @@
+name: Deploy to Amazon ECS
+
 on:
   pull_request:
     types:
@@ -14,66 +16,56 @@ env:
   PM2_SECRET_KEY: ${{ secrets.PM2_SECRET_KEY }}
 
 jobs:
-  create-docker-image:
-    name: Build docker
+  deploy:
+    name: Deploy
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-      - name: Install dependencies
-        run: npm install  
-      - name: Run npm build
-        run: npm run build
-      - name: Login into AWS ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-      - name: Create and add tags to docker image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
-          IMAGE_TAG: latest
-        run: |
-         docker build --build-arg PM2_PUBLIC_KEY="${{ secrets.PM2_PUBLIC_KEY }}" --build-arg PM2_SECRET_KEY="${{ secrets.PM2_SECRET_KEY }}" -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-  cloudformation-stack-up:
-    name: Cloudformation-Stack-Up
-    runs-on: ubuntu-latest
-    needs: create-docker-image
-    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-      - name: Check if ECS cluster exists
-        id: check-ecs-cluster
-        run: |
-          cluster_exists=$(aws ecs describe-clusters --clusters ${{ env.ECS_CLUSTER }} --region ${{ env.AWS_REGION }} --query 'clusters[0].clusterName' --output text)
-          if [ "$cluster_exists" == "None" ]; then
-            echo "Cluster does not exist. Creating cluster..."
-            aws ecs create-cluster --cluster-name ${{ env.ECS_CLUSTER }} --region ${{ env.AWS_REGION }}
-          else
-            echo "Cluster exists: $cluster_exists"
-          fi
-      - name: Check if ECS service exists
-        id: check-ecs-service
-        run: |
-          service_exists=$(aws ecs describe-services --cluster ${{ env.ECS_CLUSTER }} --services ${{ env.ECS_SERVICE }} --region ${{ env.AWS_REGION }} --query 'services' --output json)
-          echo "::set-output name=service_exists::$(echo $service_exists | jq length)"
-      - name: cloudformation-stack-up
-        run: |
-          # Cambia la ruta al script Bash que deseas ejecutar
-          bash deploy-stack.sh
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build application
+      run: npm run build
+
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker build --build-arg PM2_PUBLIC_KEY="${{ secrets.PM2_PUBLIC_KEY }}" --build-arg PM2_SECRET_KEY="${{ secrets.PM2_SECRET_KEY }}" -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+    - name: Run CloudFormation deployment script
+      env:
+        STACK_NAME: btg-pactual-task-definition
+        TEMPLATE_FILE: cloudformation-definition.json
+        REGION: ${{ env.AWS_REGION }}
+        ECS_CLUSTER_NAME: ${{ env.ECS_CLUSTER }}
+        ECS_SERVICE_NAME: ${{ env.ECS_SERVICE }}
+      run: |
+        chmod +x deploy-stack.sh
+        ./deploy-stack.sh
+
+    - name: Check deployment status
+      run: |
+        status=$(aws cloudformation describe-stacks --stack-name btg-pactual-task-definition --region ${{ env.AWS_REGION }} --query 'Stacks[0].StackStatus' --output text)
+        if [[ $status != "CREATE_COMPLETE" && $status != "UPDATE_COMPLETE" ]]; then
+          echo "Deployment failed. Stack status: $status"
+          exit 1
+        fi
