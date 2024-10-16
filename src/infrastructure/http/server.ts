@@ -38,5 +38,7 @@ server.listen(process.env.PORT || 3000, "0.0.0.0", async () => {
     process.env.MONGO_URI?.toString() || "mongodb://testdb:27017/testdb"
   );
   await connection.connect();
+
+  console.log("ENV", process.env);
   console.log("%s escuchando en %s", server.name, server.url);
 });
