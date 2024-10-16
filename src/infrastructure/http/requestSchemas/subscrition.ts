@@ -4,16 +4,30 @@ export const SubscriptionSchema = Joi.object({
   user: Joi.string()
     .guid({ version: ["uuidv4"] })
     .required()
-    .message("El usuario es requerido"), // Validación del objeto User
+    .messages({
+      "string.guid": "El usuario debe ser un UUID válido",
+      "any.required": "El usuario es requerido",
+    }), // Validación del objeto User
   fund: Joi.string()
     .guid({ version: ["uuidv4"] })
     .required()
-    .message("El fondo es requerido"), // Validación del objeto Fund
-  amount: Joi.number().positive().required().message("El monto es requerido"), // Debe ser un número positivo
-  createdAt: Joi.date().iso().optional(), // Opcional y debe ser una fecha en formato ISO
-  updatedAt: Joi.date().iso().optional(), // Opcional y debe ser una fecha en formato ISO
-  status: Joi.string()
-    .valid("Opened", "Closed")
-    .required()
-    .message("el campo status es requerido"), // Solo permite los valores "Opened" o "Closed"
+    .messages({
+      "string.guid": "El fondo debe ser un UUID válido",
+      "any.required": "El fondo es requerido",
+    }), // Validación del objeto Fund
+  amount: Joi.number().positive().required().messages({
+    "number.base": "El monto debe ser un número",
+    "number.positive": "El monto debe ser positivo",
+    "any.required": "El monto es requerido",
+  }), // Debe ser un número positivo
+  createdAt: Joi.date().iso().optional().messages({
+    "date.iso": "La fecha de creación debe estar en formato ISO",
+  }), // Opcional y debe ser una fecha en formato ISO
+  updatedAt: Joi.date().iso().optional().messages({
+    "date.iso": "La fecha de actualización debe estar en formato ISO",
+  }), // Opcional y debe ser una fecha en formato ISO
+  status: Joi.string().valid("Opened", "Closed").required().messages({
+    "any.only": "El estado solo puede ser 'Opened' o 'Closed'",
+    "any.required": "El campo status es requerido",
+  }), // Solo permite los valores "Opened" o "Closed"
 });
