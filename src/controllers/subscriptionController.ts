@@ -1,6 +1,7 @@
 import { Input as InputCreate } from "@/cases/put-subscription-fund/types";
 import { Input as InputUpdate } from "@/cases/put-subscription-fund/types";
 import { Subscription, SubscriptionDetailed } from "@/domain/subscription";
+import { SubscriptionSchema } from "@/infrastructure/http/requestSchemas/subscrition";
 import { fundModel } from "@/infrastructure/persistence/mongoose/models/fund";
 import { userModel } from "@/infrastructure/persistence/mongoose/models/user";
 import { walletModel } from "@/infrastructure/persistence/mongoose/models/wallet";
@@ -9,6 +10,7 @@ import { TransactionRepository } from "@/repositories/transactionRepository";
 import { UserRepository } from "@/repositories/userRepository";
 import { WalletRepository } from "@/repositories/walletRepository";
 import EmailService from "@/services/email";
+import Joi from "joi";
 
 export default class SubscriptionController {
   subscriptionRepository: SubscriptionRepository;
@@ -29,6 +31,12 @@ export default class SubscriptionController {
     params: Omit<InputCreate, "_id">
   ): Promise<Subscription | undefined> {
     try {
+      const { error, value } = SubscriptionSchema.validate(params);
+
+      if (error) {
+        throw error;
+      }
+
       const subscription = await this.subscriptionRepository.createOne(params);
 
       await this.transactionRepository.createOne({

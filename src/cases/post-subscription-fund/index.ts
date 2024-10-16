@@ -42,7 +42,7 @@ export const subscriptionCreateCase: FundCreateUsecaseType = async (
   } catch (e: any) {
     log.error(e);
     return {
-      data: e.message,
+      data: e,
       message: "Error subscribing .",
       status: "error",
     };
