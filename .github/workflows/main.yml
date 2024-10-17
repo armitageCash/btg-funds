@@ -50,9 +50,9 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        docker build --build-arg PM2_PUBLIC_KEY="${{ secrets.PM2_PUBLIC_KEY }}" --build-arg PM2_SECRET_KEY="${{ secrets.PM2_SECRET_KEY }}" -t $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.commitId }} .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.commitId }}
-        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:${{ env.commitId }}"
+        docker build --build-arg PM2_PUBLIC_KEY="${{ secrets.PM2_PUBLIC_KEY }}" --build-arg PM2_SECRET_KEY="${{ secrets.PM2_SECRET_KEY }}" -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:latest"
 
     - name: Run CloudFormation deployment script
       env:
