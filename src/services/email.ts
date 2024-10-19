@@ -46,9 +46,8 @@ export default class EmailService {
     data: SubscriptionEmailData
   ): Promise<string> {
     const templatePath = path.join(
-      "dist",
-      "src",
-      "infraestructure",
+      __dirname,
+      "..",
       "email",
       "templates",
       `${templateName}.hbs`
