@@ -5,14 +5,14 @@ export const SubscriptionSchema = Joi.object({
     .guid({ version: ["uuidv3"] })
     .required()
     .messages({
-      "string.guid": "El usuario debe ser un UUID válido",
+      "string.guid": "El usuario debe ser un uuid válido",
       "any.required": "El usuario es requerido",
     }), // Validación del objeto User
   fund: Joi.string()
     .guid({ version: ["uuidv3"] })
     .required()
     .messages({
-      "string.guid": "El fondo debe ser un UUID válido",
+      "string.guid": "El fondo debe ser un uuid válido",
       "any.required": "El fondo es requerido",
     }), // Validación del objeto Fund
   amount: Joi.number().positive().required().messages({
