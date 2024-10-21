@@ -5,6 +5,7 @@ import { SubscriptionSchema } from "@/infrastructure/http/requestSchemas/subscri
 import { fundModel } from "@/infrastructure/persistence/mongoose/models/fund";
 import { userModel } from "@/infrastructure/persistence/mongoose/models/user";
 import { walletModel } from "@/infrastructure/persistence/mongoose/models/wallet";
+import { FundRepository } from "@/repositories/fundRepository";
 import { SubscriptionRepository } from "@/repositories/subscriptionRepository";
 import { TransactionRepository } from "@/repositories/transactionRepository";
 import { UserRepository } from "@/repositories/userRepository";
@@ -15,6 +16,7 @@ import Joi from "joi";
 export default class SubscriptionController {
   subscriptionRepository: SubscriptionRepository;
   transactionRepository: TransactionRepository;
+  fundRepository: FundRepository;
   walletRepository: WalletRepository;
   userRepository: UserRepository;
   mailService: EmailService;
@@ -25,6 +27,7 @@ export default class SubscriptionController {
     this.walletRepository = new WalletRepository();
     this.mailService = new EmailService();
     this.userRepository = new UserRepository();
+    this.fundRepository = new FundRepository();
   }
 
   async create(
@@ -35,6 +38,16 @@ export default class SubscriptionController {
 
       if (error) {
         throw error;
+      }
+
+      const fund = await this.fundRepository.findOne(params.fund);
+
+      if (fund) {
+        if (params.amount < fund?.minAmount) {
+          throw new Error(
+            `Amount must be upper or equals than ${fund.minAmount}`
+          );
+        }
       }
 
       const subscription = await this.subscriptionRepository.createOne(params);
