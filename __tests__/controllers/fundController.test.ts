@@ -22,7 +22,7 @@ describe("FundController", () => {
   beforeEach(() => {
     fundController = new FundController();
     mockFundRepository =
-      fundController.fundRepository as unknown as MockRepository; // Asegúrate de que sea del tipo correcto
+      fundController.fundRepository as unknown as MockRepository;
   });
 
   afterEach(() => {
