@@ -20,7 +20,7 @@ const adapter =
   };
 
 // Define el caso de uso de autenticación
-export const fundCase: MeUsecaseType = async (
+export const MeUserCase: MeUsecaseType = async (
   params: Input,
   dependencies: Dependencies
 ) => {
@@ -37,13 +37,13 @@ export const fundCase: MeUsecaseType = async (
     log.error(e);
     return {
       data: e.message,
-      message: "Error getting me funds .",
+      message: "Error getting me user .",
       status: "error",
     };
   }
 };
 
-const getUserMe = createApp(adapter(fundCase)).attach(
+const getUserMe = createApp(adapter(MeUserCase)).attach(
   (dependencies: Dependencies) => {
     dependencies.logger = new Logger();
     dependencies.meService = new MeServiceImpl();
