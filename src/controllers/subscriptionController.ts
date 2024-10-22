@@ -52,6 +52,19 @@ export default class SubscriptionController {
 
       const subscription = await this.subscriptionRepository.createOne(params);
 
+      const subscriptiondetailed: SubscriptionDetailed =
+        await subscription.populate([
+          {
+            path: "user",
+            model: userModel,
+            populate: {
+              path: "wallet",
+              model: walletModel,
+            },
+          },
+          { path: "fund", model: fundModel },
+        ]);
+
       await this.transactionRepository.createOne({
         subscription: subscription._id,
         performance: 150000,
@@ -59,6 +72,20 @@ export default class SubscriptionController {
         status: subscription.status,
         type: "IN",
       });
+
+      const wallet = await this.walletRepository.findOne(
+        subscriptiondetailed.user.wallet._id
+      );
+
+      if (wallet) {
+        const balance = wallet.balance - subscription.amount;
+        await this.walletRepository.updateOne(
+          subscriptiondetailed.user.wallet._id,
+          {
+            balance,
+          }
+        );
+      }
 
       const populatedSubscription: SubscriptionDetailed =
         await subscription.populate([
